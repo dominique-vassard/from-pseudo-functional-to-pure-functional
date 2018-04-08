@@ -1,0 +1,4 @@
+# ignore node modules in react 
+react/my-app/node_modules
+
+
