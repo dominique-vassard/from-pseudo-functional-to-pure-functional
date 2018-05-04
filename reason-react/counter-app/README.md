@@ -1,4 +1,4 @@
-# first-app
+# counter-app
 
 ## Run Project
 

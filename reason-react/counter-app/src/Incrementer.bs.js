@@ -6,7 +6,7 @@ var ReasonReact = require("reason-react/src/ReasonReact.js");
 
 var incrementer = ReasonReact.statelessComponent("Incrementer");
 
-function make() {
+function make(handleClick, _) {
   return /* record */[
           /* debugName */incrementer[/* debugName */0],
           /* reactClassInternal */incrementer[/* reactClassInternal */1],
@@ -19,7 +19,8 @@ function make() {
           /* shouldUpdate */incrementer[/* shouldUpdate */8],
           /* render */(function () {
               return React.createElement("button", {
-                          className: "btn btn-success btn-block"
+                          className: "btn btn-success btn-block",
+                          onClick: handleClick
                         }, "+");
             }),
           /* initialState */incrementer[/* initialState */10],

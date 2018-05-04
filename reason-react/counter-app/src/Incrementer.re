@@ -1,9 +1,9 @@
 let incrementer = ReasonReact.statelessComponent("Incrementer");
 
-let make = _children => {
+let make = (~handleClick, _children) => {
   ...incrementer,
-  render: self =>
-    <button className="btn btn-success btn-block">
+  render: _self =>
+    <button className="btn btn-success btn-block" onClick=handleClick>
       (ReasonReact.string("+"))
     </button>,
 };

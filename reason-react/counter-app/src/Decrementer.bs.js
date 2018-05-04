@@ -6,7 +6,7 @@ var ReasonReact = require("reason-react/src/ReasonReact.js");
 
 var decrementer = ReasonReact.statelessComponent("Decrementer");
 
-function make() {
+function make(handleClick, _) {
   return /* record */[
           /* debugName */decrementer[/* debugName */0],
           /* reactClassInternal */decrementer[/* reactClassInternal */1],
@@ -19,7 +19,8 @@ function make() {
           /* shouldUpdate */decrementer[/* shouldUpdate */8],
           /* render */(function () {
               return React.createElement("button", {
-                          className: "btn btn-danger btn-block"
+                          className: "btn btn-danger btn-block",
+                          onClick: handleClick
                         }, "-");
             }),
           /* initialState */decrementer[/* initialState */10],
