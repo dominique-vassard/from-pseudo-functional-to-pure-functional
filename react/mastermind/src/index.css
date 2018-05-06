@@ -9,6 +9,10 @@ body {
     width: 15em;
 }
 
+.new-game-btn {
+    font-size: 1.5em;
+}
+
 .codepeg-red {
     margin: 0.25em;
     width: 2.5em;

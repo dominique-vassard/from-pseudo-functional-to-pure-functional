@@ -2,8 +2,13 @@ import React from "react"
 import Board from "./Board"
 import { Grid, Col, Row, Panel } from "react-bootstrap"
 import ColorButton from "./ColorButton"
+import ControlPanel from "./ControlPanel";
 
 const AVAILABLE_COLORS = ["blue", "green", "orange", "purple", "red", "yellow"]
+const START = 1
+const TRY = 2
+const LOST = 3
+const WIN = 4
 
 class Mastermind extends React.Component {
     constructor(props) {
@@ -17,7 +22,7 @@ class Mastermind extends React.Component {
             "codeToBreak": this.init_code_to_break(nbMaxTries),
             "currentTryIndex": 0,
             "currentColorChoice": 0,
-            "gameIsOver": false
+            "gameState": START
         }
     }
 
@@ -34,31 +39,65 @@ class Mastermind extends React.Component {
         return Array(nbMaxTries).fill(null).map(_unused => ["grey", "grey", "grey", "grey"])
     }
 
+    new_game() {
+        this.setState({
+            "breakerTries": this.init_breaker_tries(this.state.nbMaxTries),
+            "codeToBreak": this.init_code_to_break(this.state.nbMaxTries),
+            "currentTryIndex": 0,
+            "currentColorChoice": 0,
+            "gameState": TRY
+        })
+    }
+
+    check_try(try_num) {
+        const to_check = this.state.breakerTries[try_num]
+        let is_valid = false
+        let nb_valid = 0
+
+        for (let i = 0; i < 4; i++) {
+            if (to_check[i] === this.state.codeToBreak[i]) {
+                nb_valid++
+            }
+        }
+
+        if (nb_valid === 4) {
+            is_valid = true
+            this.setState({
+                "gameState": WIN
+            })
+        }
+
+        return is_valid
+    }
+
     choose_color(color) {
-        if (this.state.gameIsOver) {
+        if (this.state.gameState !== TRY) {
             return false
         }
         let breakerTries = this.state.breakerTries
         let currentTryIndex = this.state.currentTryIndex
         let currentColorChoice = this.state.currentColorChoice
-        let gameIsOver = this.state.gameIsOver
+        let gameState = this.state.gameState
 
         breakerTries[this.state.currentTryIndex][this.state.currentColorChoice] = color
         currentColorChoice++
         if (currentColorChoice === 4) {
+            if (this.check_try(currentTryIndex)) {
+                return true
+            }
             currentColorChoice = 0
             currentTryIndex++
         }
 
         if (currentTryIndex === (this.state.nbMaxTries)) {
-            gameIsOver = true
+            gameState = LOST
         }
 
         this.setState({
             "breakerTries": breakerTries,
             "currentColorChoice": currentColorChoice,
             "currentTryIndex": currentTryIndex,
-            "gameIsOver": gameIsOver
+            "gameState": gameState
         })
     }
 
@@ -70,6 +109,7 @@ class Mastermind extends React.Component {
                         <h1 className="text-center">Mastermind</h1>
                     </Col>
                 </Row>
+                <ControlPanel gameState={this.state.gameState} newGame={() => this.new_game()} />
                 <Row>
                     <Col md={1} />
                     <Col md={4}>
