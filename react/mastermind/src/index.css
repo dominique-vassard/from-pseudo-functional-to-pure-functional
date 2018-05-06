@@ -1,0 +1,44 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+.board {
+    width: 11em;
+}
+
+.codepeg-red {
+    margin: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: red;
+}
+
+.codepeg-blue {
+    margin: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: blue;
+}
+
+.codepeg-green {
+    margin: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: green;
+}
+
+.codepeg-yellow {
+    margin: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: yellow;
+}
+
+.codepeg-grey {
+    margin: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: lightgray;
+}
