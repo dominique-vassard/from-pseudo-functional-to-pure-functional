@@ -52,7 +52,7 @@ const ControlPanel = (props) =>
         <Col md={1} />
         <Col md={10}>
             <Alert bsStyle={get_style(props.gameState)}>
-                <h4>{get_message(props.gameState)}</h4>
+                <h2>{get_message(props.gameState)}</h2>
             </Alert>
 
         </Col>

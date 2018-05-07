@@ -19,6 +19,7 @@ class Mastermind extends React.Component {
         this.state = {
             "nbMaxTries": nbMaxTries,
             "breakerTries": this.init_breaker_tries(nbMaxTries),
+            "tryResults": this.init_try_results(nbMaxTries),
             "codeToBreak": this.init_code_to_break(nbMaxTries),
             "currentTryIndex": 0,
             "currentColorChoice": 0,
@@ -39,10 +40,15 @@ class Mastermind extends React.Component {
         return Array(nbMaxTries).fill(null).map(_unused => ["grey", "grey", "grey", "grey"])
     }
 
+    init_try_results(nbMaxTries) {
+        return Array(nbMaxTries).fill(null)
+    }
+
     new_game() {
         this.setState({
             "breakerTries": this.init_breaker_tries(this.state.nbMaxTries),
             "codeToBreak": this.init_code_to_break(this.state.nbMaxTries),
+            "tryResults": this.init_try_results(this.state.nbMaxTries),
             "currentTryIndex": 0,
             "currentColorChoice": 0,
             "gameState": TRY
@@ -53,6 +59,8 @@ class Mastermind extends React.Component {
         const to_check = this.state.breakerTries[try_num]
         let is_valid = false
         let nb_valid = 0
+        let tryResults = this.state.tryResults
+        let gameState = this.state.gameState
 
         for (let i = 0; i < 4; i++) {
             if (to_check[i] === this.state.codeToBreak[i]) {
@@ -60,12 +68,17 @@ class Mastermind extends React.Component {
             }
         }
 
+        tryResults[this.state.currentTryIndex] = false
         if (nb_valid === 4) {
             is_valid = true
-            this.setState({
-                "gameState": WIN
-            })
+            gameState = WIN
+            tryResults[this.state.currentTryIndex] = true
         }
+
+        this.setState({
+            "gameState": gameState,
+            "tryResults": tryResults
+        })
 
         return is_valid
     }
@@ -113,7 +126,7 @@ class Mastermind extends React.Component {
                 <Row>
                     <Col md={1} />
                     <Col md={4}>
-                        <Board breakerTries={this.state.breakerTries} codeToBreak={this.state.codeToBreak} />
+                        <Board breakerTries={this.state.breakerTries} codeToBreak={this.state.codeToBreak} results={this.state.tryResults} />
                     </Col>
                     <Col md={1} />
                     <Col md={5}>
