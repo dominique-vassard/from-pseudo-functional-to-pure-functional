@@ -9,9 +9,8 @@ class Board extends React.Component {
             <ListGroup className="board">
                 {/* Breaker tries */}
                 {this.props.breakerTries.map((breaker_try, index) =>
-                    <div>
-                        <CodePhrase key={index} phrase={breaker_try} result={this.props.results[index]} />
-                    </div>)}
+                    <CodePhrase key={index} phrase={breaker_try} result={this.props.results[index]} />
+                )}
 
                 {/* Code to break */}
                 <CodePhrase phrase={this.props.codeToBreak} />

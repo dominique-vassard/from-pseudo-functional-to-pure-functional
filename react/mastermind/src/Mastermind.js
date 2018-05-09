@@ -2,7 +2,8 @@ import React from "react"
 import Board from "./Board"
 import { Grid, Col, Row, Panel } from "react-bootstrap"
 import ColorButton from "./ColorButton"
-import ControlPanel from "./ControlPanel";
+import ControlPanel from "./ControlPanel"
+import History from "./History"
 
 const AVAILABLE_COLORS = ["blue", "green", "orange", "purple", "red", "yellow"]
 const START = 1
@@ -23,7 +24,8 @@ class Mastermind extends React.Component {
             "codeToBreak": this.init_code_to_break(nbMaxTries),
             "currentTryIndex": 0,
             "currentColorChoice": 0,
-            "gameState": START
+            "gameState": START,
+            "history": []
         }
     }
 
@@ -51,8 +53,31 @@ class Mastermind extends React.Component {
             "tryResults": this.init_try_results(this.state.nbMaxTries),
             "currentTryIndex": 0,
             "currentColorChoice": 0,
-            "gameState": TRY
+            "gameState": TRY,
+            "history": []
         })
+    }
+
+    save_history() {
+        let state = JSON.parse(JSON.stringify(this.state))
+        state.history.push({
+            "nbMaxTries": state.nbMaxTries,
+            "breakerTries": state.breakerTries,
+            "tryResults": state.tryResults,
+            "codeToBreak": state.codeToBreak,
+            "currentTryIndex": state.currentTryIndex,
+            "currentColorChoice": state.currentColorChoice,
+            "gameState": state.gameState
+        })
+        this.setState({
+            history: state.history
+        })
+    }
+
+    go_to_history(index) {
+        this.setState(
+            this.state.history[index]
+        )
     }
 
     check_try(try_num) {
@@ -87,6 +112,7 @@ class Mastermind extends React.Component {
         if (this.state.gameState !== TRY) {
             return false
         }
+        this.save_history()
         let breakerTries = this.state.breakerTries
         let currentTryIndex = this.state.currentTryIndex
         let currentColorChoice = this.state.currentColorChoice
@@ -136,6 +162,7 @@ class Mastermind extends React.Component {
                                 {AVAILABLE_COLORS.map((av_color, index) => <ColorButton key={index} color={av_color} onClick={() => this.choose_color(av_color)} />)}
                             </Panel.Body>
                         </Panel>
+                        <History history={this.state.history} onClick={(index) => this.go_to_history(index)} />
                     </Col>
                     <Col md={1} />
                 </Row>
