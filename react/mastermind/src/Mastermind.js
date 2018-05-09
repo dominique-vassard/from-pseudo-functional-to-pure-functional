@@ -25,7 +25,8 @@ class Mastermind extends React.Component {
             "currentTryIndex": 0,
             "currentColorChoice": 0,
             "gameState": START,
-            "history": []
+            "history": [],
+            "historyIndex": 0
         }
     }
 
@@ -54,7 +55,17 @@ class Mastermind extends React.Component {
             "currentTryIndex": 0,
             "currentColorChoice": 0,
             "gameState": TRY,
-            "history": []
+            "history": [
+                {
+                    "breakerTries": this.init_breaker_tries(this.state.nbMaxTries),
+                    "codeToBreak": this.init_code_to_break(this.state.nbMaxTries),
+                    "tryResults": this.init_try_results(this.state.nbMaxTries),
+                    "currentTryIndex": 0,
+                    "currentColorChoice": 0,
+                    "gameState": TRY
+                }
+            ],
+            "historyIndex": 0
         })
     }
 
@@ -70,14 +81,15 @@ class Mastermind extends React.Component {
             "gameState": state.gameState
         })
         this.setState({
-            history: state.history
+            history: state.history,
+            historyIndex: state.historyIndex + 1
         })
     }
 
     go_to_history(index) {
-        this.setState(
-            this.state.history[index]
-        )
+        let new_state = JSON.parse(JSON.stringify(this.state.history[index]))
+        new_state.historyIndex = index
+        this.setState(new_state)
     }
 
     check_try(try_num) {
@@ -112,7 +124,6 @@ class Mastermind extends React.Component {
         if (this.state.gameState !== TRY) {
             return false
         }
-        this.save_history()
         let breakerTries = this.state.breakerTries
         let currentTryIndex = this.state.currentTryIndex
         let currentColorChoice = this.state.currentColorChoice
@@ -138,6 +149,8 @@ class Mastermind extends React.Component {
             "currentTryIndex": currentTryIndex,
             "gameState": gameState
         })
+
+        this.save_history()
     }
 
     render() {
@@ -162,7 +175,7 @@ class Mastermind extends React.Component {
                                 {AVAILABLE_COLORS.map((av_color, index) => <ColorButton key={index} color={av_color} onClick={() => this.choose_color(av_color)} />)}
                             </Panel.Body>
                         </Panel>
-                        <History history={this.state.history} onClick={(index) => this.go_to_history(index)} />
+                        <History history={this.state.history} currentHistory={this.state.historyIndex} onClick={(index) => this.go_to_history(index)} />
                     </Col>
                     <Col md={1} />
                 </Row>
