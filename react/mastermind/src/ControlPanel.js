@@ -1,7 +1,13 @@
 import React from "react"
 import { Col, Button, Alert, Row } from "react-bootstrap"
 
-
+/**
+ * Determine the message depending on the result
+ *
+ * @param   {null|boolean}    result    The result for which deteremine the message
+ *
+ * @returns {string}                    The message to display
+ */
 const get_message = function (game_state) {
     let message
 
@@ -23,6 +29,13 @@ const get_message = function (game_state) {
     return message
 }
 
+/**
+ * Determine style depending on the game state
+ *
+ * @param   {null|boolean}    result    The result for which deteremine style
+ *
+ * @returns {string}                    The style to apply
+ */
 const get_style = function (game_state) {
     let style
 
@@ -44,6 +57,20 @@ const get_style = function (game_state) {
     return style
 }
 
+
+/**
+ * Component: ControlPnal
+ * Allow to launch a new game
+ * Display info regarding game process
+ *
+ * @param       {object}        props           The required properties:
+ *                                              {
+ *                                                      "newGame": {function}   Function to launch a new game
+ *                                                      "gameState"; {int}  The game state to display
+ *                                              }
+ *
+ * @returns                                     The component
+ */
 const ControlPanel = (props) =>
     <Row>
         <Col md={1}>

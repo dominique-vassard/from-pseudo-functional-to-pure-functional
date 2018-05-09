@@ -1,6 +1,19 @@
 import React from "react"
 import { Panel, Glyphicon } from "react-bootstrap";
 
+/**
+ * Component: History
+ * Display move list
+ * Allow time travel through moves
+ *
+ * @param       {object}        props           The required properties:
+ *                                              {
+ *                                                      "history": {Array} the complete game history
+ *                                                      "onClick": {function} the function to travel through moves
+ *                                              }
+ *
+ * @returns                                     The component
+ */
 const History = (props) =>
   <Panel>
     <Panel.Heading>
@@ -16,12 +29,15 @@ const History = (props) =>
         }
 
         let indic = ""
+        let selected = ""
         if (index === props.currentHistory) {
           indic = <Glyphicon glyph="chevron-right" className="small" />
+          selected = "selected-history"
         }
 
+
         return (
-          <div key={"dh" + index} onClick={() => props.onClick(index)}>
+          <div key={"dh" + index} onClick={() => props.onClick(index)} className={"link rounded " + selected}>
             {indic} <span key={"sph" + index}>{msg}</span>
           </div>
 

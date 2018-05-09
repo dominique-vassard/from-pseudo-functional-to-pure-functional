@@ -5,16 +5,24 @@ import ColorButton from "./ColorButton"
 import ControlPanel from "./ControlPanel"
 import History from "./History"
 
+// Aailabe peg colors
 const AVAILABLE_COLORS = ["blue", "green", "orange", "purple", "red", "yellow"]
+
+// Game steps
 const START = 1
 const TRY = 2
 const LOST = 3
 const WIN = 4
 
+/**
+ * Component: Mastermind
+ * Holds the game
+ */
 class Mastermind extends React.Component {
     constructor(props) {
         super(props)
 
+        // MAx number of tries to breack the code
         const nbMaxTries = 10
 
         this.state = {
@@ -30,6 +38,11 @@ class Mastermind extends React.Component {
         }
     }
 
+    /**
+     * Initializes the code to break
+     *
+     * @returns     {Array}      an array containing the four colors of the code to break
+     */
     init_code_to_break() {
         let initial_colors = []
         for (let i = 0; i < 4; i++) {
@@ -39,14 +52,33 @@ class Mastermind extends React.Component {
         return initial_colors
     }
 
+    /**
+     * Initializes the container for the breaker tries
+     *
+     * @param   {int}   nbMaxTries      The max number of tries to break the code
+     *
+     * @returns {Array}                 An array fill the start colors
+     */
     init_breaker_tries(nbMaxTries) {
         return Array(nbMaxTries).fill(null).map(_unused => ["grey", "grey", "grey", "grey"])
     }
 
+    /**
+     * Initializes the container for the try results
+     *
+     * @param   {int}   nbMaxTries      The max number of tries to break the code
+     *
+     * @returns {Array}                 An array fill the starting results
+     */
     init_try_results(nbMaxTries) {
         return Array(nbMaxTries).fill(null)
     }
 
+    /**
+     * Re-initializes the data for a new game
+     *
+     * @returns void
+     */
     new_game() {
         this.setState({
             "breakerTries": this.init_breaker_tries(this.state.nbMaxTries),
@@ -58,10 +90,7 @@ class Mastermind extends React.Component {
             "history": [
                 {
                     "breakerTries": this.init_breaker_tries(this.state.nbMaxTries),
-                    "codeToBreak": this.init_code_to_break(this.state.nbMaxTries),
                     "tryResults": this.init_try_results(this.state.nbMaxTries),
-                    "currentTryIndex": 0,
-                    "currentColorChoice": 0,
                     "gameState": TRY
                 }
             ],
@@ -69,15 +98,16 @@ class Mastermind extends React.Component {
         })
     }
 
+    /**
+     * Save current state in order to fuel time travel
+     *
+     * @returns void
+     */
     save_history() {
         let state = JSON.parse(JSON.stringify(this.state))
         state.history.push({
-            "nbMaxTries": state.nbMaxTries,
             "breakerTries": state.breakerTries,
             "tryResults": state.tryResults,
-            "codeToBreak": state.codeToBreak,
-            "currentTryIndex": state.currentTryIndex,
-            "currentColorChoice": state.currentColorChoice,
             "gameState": state.gameState
         })
         this.setState({
@@ -86,14 +116,29 @@ class Mastermind extends React.Component {
         })
     }
 
+    /**
+     * Time travel to wanted time
+     *
+     * @param   {int}   index       The index of the history to display
+     *
+     * @returns void
+     */
     go_to_history(index) {
         let new_state = JSON.parse(JSON.stringify(this.state.history[index]))
         new_state.historyIndex = index
         this.setState(new_state)
     }
 
-    check_try(try_num) {
-        const to_check = this.state.breakerTries[try_num]
+    /**
+     * Check if the answer is correct or not
+     * If answer is correct, stop the game
+     *
+     * @param   {int}   try_index       Index of the try to check
+     *
+     * @returns {bool}                  True is answer is correct, false otherwise
+     */
+    check_try(try_index) {
+        const to_check = this.state.breakerTries[try_index]
         let is_valid = false
         let nb_valid = 0
         let tryResults = this.state.tryResults
@@ -120,8 +165,16 @@ class Mastermind extends React.Component {
         return is_valid
     }
 
+    /**
+     * Event handler: when user click a color to compose the code
+     * If all tries are used, stop the game
+     *
+     * @param   {string}     color       The chosen color
+     *
+     * @returns void
+     */
     choose_color(color) {
-        if (this.state.gameState !== TRY) {
+        if (this.state.gameState !== TRY || this.state.historyIndex !== this.state.history.length - 1) {
             return false
         }
         let breakerTries = this.state.breakerTries
@@ -153,33 +206,36 @@ class Mastermind extends React.Component {
         this.save_history()
     }
 
+    /**
+     * Render the game page
+     */
     render() {
         return (
-            <Grid className="container jumbotron" >
-                <Row>
-                    <Col md={12}>
-                        <h1 className="text-center">Mastermind</h1>
-                    </Col>
-                </Row>
-                <ControlPanel gameState={this.state.gameState} newGame={() => this.new_game()} />
-                <Row>
-                    <Col md={1} />
-                    <Col md={4}>
-                        <Board breakerTries={this.state.breakerTries} codeToBreak={this.state.codeToBreak} results={this.state.tryResults} />
-                    </Col>
-                    <Col md={1} />
-                    <Col md={5}>
-                        <Panel bsStyle="primary">
-                            <Panel.Heading>Choose a color</Panel.Heading>
-                            <Panel.Body>
-                                {AVAILABLE_COLORS.map((av_color, index) => <ColorButton key={index} color={av_color} onClick={() => this.choose_color(av_color)} />)}
-                            </Panel.Body>
-                        </Panel>
-                        <History history={this.state.history} currentHistory={this.state.historyIndex} onClick={(index) => this.go_to_history(index)} />
-                    </Col>
-                    <Col md={1} />
-                </Row>
-            </Grid>
+            <div>
+                <header className="app-header">
+                    <h1 className="text-center title">Mastermind</h1>
+                </header>
+                <Grid className="container jumbotron" >
+                    <ControlPanel gameState={this.state.gameState} newGame={() => this.new_game()} />
+                    <Row>
+                        <Col md={1} />
+                        <Col md={4}>
+                            <Board breakerTries={this.state.breakerTries} codeToBreak={this.state.codeToBreak} results={this.state.tryResults} />
+                        </Col>
+                        <Col md={1} />
+                        <Col md={5}>
+                            <Panel bsStyle="primary">
+                                <Panel.Heading>Choose a color</Panel.Heading>
+                                <Panel.Body>
+                                    {AVAILABLE_COLORS.map((av_color, index) => <ColorButton key={index} color={av_color} onClick={() => this.choose_color(av_color)} />)}
+                                </Panel.Body>
+                            </Panel>
+                            <History history={this.state.history} currentHistory={this.state.historyIndex} onClick={(index) => this.go_to_history(index)} />
+                        </Col>
+                        <Col md={1} />
+                    </Row>
+                </Grid>
+            </div>
         )
     }
 }
