@@ -66,5 +66,13 @@ let make = _children => {
     history: [],
     historyIndex: 0,
   },
-  render: _self => <div> (ReasonReact.string("Mastermind")) </div>,
+  render: _self =>
+    <div>
+      <header className="app-header">
+        <h1 className="text-center title">
+          (ReasonReact.string("Mastermind"))
+        </h1>
+      </header>
+      <div className="container jumbotron" />
+    </div>,
 };

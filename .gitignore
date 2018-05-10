@@ -16,6 +16,9 @@ react/my-app/node_modules
 # elm-stuff
 **/*/elm-stuff
 
+# Reason React compiled file
+**/*/*.bs.js
+
 # misc
 **/*/.DS_Store
 **/*/.env.local
@@ -26,3 +29,9 @@ react/my-app/node_modules
 **/*/npm-debug.log*
 **/*/yarn-debug.log*
 **/*/yarn-error.log*
+
+# VS code
+.vscode
+
+# eslint config
+**/*/*.eslintrc.json
