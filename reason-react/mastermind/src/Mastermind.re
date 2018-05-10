@@ -1,3 +1,5 @@
+open Types;
+
 /* Available peg Colors */
 type pegColor =
   | Blue
@@ -7,13 +9,6 @@ type pegColor =
   | Purple
   | Red
   | Yellow;
-
-/* Game states */
-type gameState =
-  | Start
-  | Try
-  | Lost
-  | Win;
 
 type breakerTry = {
   pegs: list(pegColor),
@@ -36,6 +31,9 @@ type state = {
   historyIndex: int,
 };
 
+type action =
+  | NewGame;
+
 let rec range = (start: int, end_: int) =>
   if (start >= end_) {
     [];
@@ -51,11 +49,24 @@ let initBreakerTry = () => {
 let initBreakerTries = (nbMaxTries: int) =>
   List.map((_) => initBreakerTry(), range(0, nbMaxTries));
 
-let component = ReasonReact.reducerComponent("Mastermind");
+let new_game = state =>
+  ReasonReact.Update({
+    ...state,
+    breakerTries: initBreakerTries(state.nbMaxTries),
+    codeToBreak: initBreakerTry(),
+    currentTryIndex: 0,
+    currentColorChoiceIndex: 0,
+    gameState: Try,
+    history: [
+      {breakerTries: initBreakerTries(state.nbMaxTries), gameState: Try},
+    ],
+    historyIndex: 0,
+  });
+
+let mastermind_component = ReasonReact.reducerComponent("Mastermind");
 
 let make = _children => {
-  ...component,
-  reducer: ((), _state: state) => ReasonReact.NoUpdate,
+  ...mastermind_component,
   initialState: () => {
     nbMaxTries: 10,
     breakerTries: initBreakerTries(10),
@@ -66,13 +77,24 @@ let make = _children => {
     history: [],
     historyIndex: 0,
   },
-  render: _self =>
+  reducer: (action, state: state) =>
+    switch (action) {
+    /* | NewGame => ReasonReact.SideEffects((_self => Js.log("Click!"))) */
+    /* | NewGame => ReasonReact.Update({...state, gameState: Try}) */
+    | NewGame => new_game(state)
+    },
+  render: self =>
     <div>
       <header className="app-header">
         <h1 className="text-center title">
           (ReasonReact.string("Mastermind"))
         </h1>
       </header>
-      <div className="container jumbotron" />
+      <div className="container jumbotron">
+        <ControlPanel
+          onClick=(_event => self.send(NewGame))
+          gameState=self.state.gameState
+        />
+      </div>
     </div>,
 };
