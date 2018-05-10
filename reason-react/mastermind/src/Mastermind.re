@@ -88,6 +88,29 @@ let make = _children => {
               codeToBreak=self.state.codeToBreak
             />
           </div>
+          <div className="col-md-4">
+            <div className="card bg-default">
+              <div className="card-header">
+                (ReasonReact.string("Choose a color"))
+              </div>
+              <div className="card-body">
+                (
+                  ReasonReact.array(
+                    Array.of_list(
+                      List.mapi(
+                        (idx, colori) =>
+                          <ColorButton
+                            key=(string_of_int(idx))
+                            color=colori
+                          />,
+                        enumChoosablePegColors(),
+                      ),
+                    ),
+                  )
+                )
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>,
