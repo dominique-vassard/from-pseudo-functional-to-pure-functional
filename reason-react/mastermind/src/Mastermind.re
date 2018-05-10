@@ -1,20 +1,5 @@
 open Types;
 
-/* Available peg Colors */
-type pegColor =
-  | Blue
-  | Green
-  | Grey
-  | Orange
-  | Purple
-  | Red
-  | Yellow;
-
-type breakerTry = {
-  pegs: list(pegColor),
-  result: option(bool),
-};
-
 type history = {
   breakerTries: list(breakerTry),
   gameState,
@@ -95,6 +80,15 @@ let make = _children => {
           onClick=(_event => self.send(NewGame))
           gameState=self.state.gameState
         />
+        <div className="row">
+          <div className="col-md-1" />
+          <div className="col-md-4">
+            <Board
+              breakerTries=self.state.breakerTries
+              codeToBreak=self.state.codeToBreak
+            />
+          </div>
+        </div>
       </div>
     </div>,
 };
