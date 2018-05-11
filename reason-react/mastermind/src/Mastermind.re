@@ -17,7 +17,8 @@ type state = {
 };
 
 type action =
-  | NewGame;
+  | NewGame
+  | ChooseColor(pegColor);
 
 let rec range = (start: int, end_: int) =>
   if (start >= end_) {
@@ -48,6 +49,19 @@ let new_game = state =>
     historyIndex: 0,
   });
 
+let choose_color = (state, color) => {
+  Js.log("Clicked");
+  Js.log(color);
+  switch (state.gameState) {
+  | Try => ReasonReact.NoUpdate
+  /* | Try => ReasonReact.Update({
+       ...state,
+       breakerTries: state.breakerTries
+     }) */
+  | _ => ReasonReact.NoUpdate
+  };
+};
+
 let mastermind_component = ReasonReact.reducerComponent("Mastermind");
 
 let make = _children => {
@@ -67,6 +81,7 @@ let make = _children => {
     /* | NewGame => ReasonReact.SideEffects((_self => Js.log("Click!"))) */
     /* | NewGame => ReasonReact.Update({...state, gameState: Try}) */
     | NewGame => new_game(state)
+    | ChooseColor(color) => choose_color(state, color)
     },
   render: self =>
     <div>
@@ -98,10 +113,11 @@ let make = _children => {
                   ReasonReact.array(
                     Array.of_list(
                       List.mapi(
-                        (idx, colori) =>
+                        (idx, color) =>
                           <ColorButton
                             key=(string_of_int(idx))
-                            color=colori
+                            color
+                            onClick=(_event => self.send(ChooseColor(color)))
                           />,
                         enumChoosablePegColors(),
                       ),
