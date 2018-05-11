@@ -20,4 +20,11 @@ type breakerTry = {
   result: option(bool),
 };
 
-let enumChoosablePegColors = () => [Blue, Green, Orange, Purple, Red, Yellow];
+let enumChoosablePegColors = () => [|
+  Blue,
+  Green,
+  Orange,
+  Purple,
+  Red,
+  Yellow,
+|];

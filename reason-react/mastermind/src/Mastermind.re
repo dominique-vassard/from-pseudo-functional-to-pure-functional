@@ -27,6 +27,22 @@ let rec range = (start: int, end_: int) =>
     [start, ...range(start + 1, end_)];
   };
 
+let rec init_code_pegs = start =>
+  if (start >= 4) {
+    [];
+  } else {
+    let colors = enumChoosablePegColors();
+    [
+      colors[Random.int(Array.length(colors) - 1)],
+      ...init_code_pegs(start + 1),
+    ];
+  };
+
+let init_code_to_break = nbMaxTries => {
+  pegs: Array.of_list(init_code_pegs(0)),
+  result: None,
+};
+
 let initBreakerTry = () => {pegs: Array.init(4, (_) => Grey), result: None};
 
 let initBreakerTries = (nbMaxTries: int) =>
@@ -36,7 +52,7 @@ let new_game = state =>
   ReasonReact.Update({
     ...state,
     breakerTries: initBreakerTries(state.nbMaxTries),
-    codeToBreak: initBreakerTry(),
+    codeToBreak: init_code_to_break(state.nbMaxTries),
     currentTryIndex: 0,
     currentColorChoiceIndex: 0,
     gameState: Try,
@@ -137,16 +153,14 @@ let make = _children => {
               <div className="card-body">
                 (
                   ReasonReact.array(
-                    Array.of_list(
-                      List.mapi(
-                        (idx, color) =>
-                          <ColorButton
-                            key=(string_of_int(idx))
-                            color
-                            onClick=(_event => self.send(ChooseColor(color)))
-                          />,
-                        enumChoosablePegColors(),
-                      ),
+                    Array.mapi(
+                      (idx, color) =>
+                        <ColorButton
+                          key=(string_of_int(idx))
+                          color
+                          onClick=(_event => self.send(ChooseColor(color)))
+                        />,
+                      enumChoosablePegColors(),
                     ),
                   )
                 )
