@@ -51,6 +51,16 @@ let choose_color = (state, color) =>
   | Try =>
     state.breakerTries[state.currentTryIndex].pegs[state.
                                                      currentColorChoiceIndex] = color;
+    let gameWon =
+      if (state.currentColorChoiceIndex
+          + 1 == 4
+          &&
+          state.breakerTries[state.currentTryIndex].pegs == state.codeToBreak.
+                                                              pegs) {
+        true;
+      } else {
+        false;
+      };
     let currentColorChoiceIndex =
       if (state.currentColorChoiceIndex + 1 == 4) {
         0;
@@ -63,11 +73,19 @@ let choose_color = (state, color) =>
       } else {
         state.currentTryIndex;
       };
+    let gameState =
+      if (gameWon) {
+        Win;
+      } else if (currentTryIndex == state.nbMaxTries) {
+        Lost;
+      } else {
+        state.gameState;
+      };
     ReasonReact.Update({
       ...state,
-      /* breakerTries: state.breakerTries, */
       currentTryIndex,
       currentColorChoiceIndex,
+      gameState,
     });
   | _ => ReasonReact.NoUpdate
   };
