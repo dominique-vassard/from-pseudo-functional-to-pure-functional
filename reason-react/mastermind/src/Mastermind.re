@@ -38,7 +38,7 @@ let rec init_code_pegs = start =>
     ];
   };
 
-let init_code_to_break = nbMaxTries => {
+let init_code_to_break = () => {
   pegs: Array.of_list(init_code_pegs(0)),
   result: None,
 };
@@ -52,7 +52,7 @@ let new_game = state =>
   ReasonReact.Update({
     ...state,
     breakerTries: initBreakerTries(state.nbMaxTries),
-    codeToBreak: init_code_to_break(state.nbMaxTries),
+    codeToBreak: init_code_to_break(),
     currentTryIndex: 0,
     currentColorChoiceIndex: 0,
     gameState: Try,
@@ -97,11 +97,15 @@ let choose_color = (state, color) =>
       } else {
         state.gameState;
       };
+    let history =
+      state.history @ [{breakerTries: state.breakerTries, gameState}];
     ReasonReact.Update({
       ...state,
       currentTryIndex,
       currentColorChoiceIndex,
       gameState,
+      history,
+      historyIndex: state.historyIndex + 1,
     });
   | _ => ReasonReact.NoUpdate
   };
@@ -166,6 +170,10 @@ let make = _children => {
                 )
               </div>
             </div>
+            <History
+              history=self.state.history
+              currentHistoryIndex=self.state.historyIndex
+            />
           </div>
         </div>
       </div>
