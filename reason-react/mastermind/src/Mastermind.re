@@ -1,13 +1,13 @@
 open Types;
 
 type history = {
-  breakerTries: list(breakerTry),
+  breakerTries: array(breakerTry),
   gameState,
 };
 
 type state = {
   nbMaxTries: int,
-  breakerTries: list(breakerTry),
+  breakerTries: array(breakerTry),
   codeToBreak: breakerTry,
   currentTryIndex: int,
   currentColorChoiceIndex: int,
@@ -27,13 +27,10 @@ let rec range = (start: int, end_: int) =>
     [start, ...range(start + 1, end_)];
   };
 
-let initBreakerTry = () => {
-  pegs: List.map((_) => Grey, range(0, 4)),
-  result: None,
-};
+let initBreakerTry = () => {pegs: Array.init(4, (_) => Grey), result: None};
 
 let initBreakerTries = (nbMaxTries: int) =>
-  List.map((_) => initBreakerTry(), range(0, nbMaxTries));
+  Array.init(nbMaxTries, (_) => initBreakerTry());
 
 let new_game = state =>
   ReasonReact.Update({
@@ -49,18 +46,31 @@ let new_game = state =>
     historyIndex: 0,
   });
 
-let choose_color = (state, color) => {
-  Js.log("Clicked");
-  Js.log(color);
+let choose_color = (state, color) =>
   switch (state.gameState) {
-  | Try => ReasonReact.NoUpdate
-  /* | Try => ReasonReact.Update({
-       ...state,
-       breakerTries: state.breakerTries
-     }) */
+  | Try =>
+    state.breakerTries[state.currentTryIndex].pegs[state.
+                                                     currentColorChoiceIndex] = color;
+    let currentColorChoiceIndex =
+      if (state.currentColorChoiceIndex + 1 == 4) {
+        0;
+      } else {
+        state.currentColorChoiceIndex + 1;
+      };
+    let currentTryIndex =
+      if (state.currentColorChoiceIndex + 1 == 4) {
+        state.currentTryIndex + 1;
+      } else {
+        state.currentTryIndex;
+      };
+    ReasonReact.Update({
+      ...state,
+      /* breakerTries: state.breakerTries, */
+      currentTryIndex,
+      currentColorChoiceIndex,
+    });
   | _ => ReasonReact.NoUpdate
   };
-};
 
 let mastermind_component = ReasonReact.reducerComponent("Mastermind");
 
@@ -78,8 +88,6 @@ let make = _children => {
   },
   reducer: (action, state: state) =>
     switch (action) {
-    /* | NewGame => ReasonReact.SideEffects((_self => Js.log("Click!"))) */
-    /* | NewGame => ReasonReact.Update({...state, gameState: Try}) */
     | NewGame => new_game(state)
     | ChooseColor(color) => choose_color(state, color)
     },

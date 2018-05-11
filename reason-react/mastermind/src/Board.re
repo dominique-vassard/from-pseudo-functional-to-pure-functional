@@ -6,12 +6,10 @@ let make = (~breakerTries, ~codeToBreak, _children) => {
     <ul className="list-group">
       (
         ReasonReact.array(
-          Array.of_list(
-            List.mapi(
-              (idx, breakerTry) =>
-                <CodePhrase key=(string_of_int(idx)) phrase=breakerTry />,
-              breakerTries,
-            ),
+          Array.mapi(
+            (idx, breakerTry) =>
+              <CodePhrase key=(string_of_int(idx)) phrase=breakerTry />,
+            breakerTries,
           ),
         )
       )

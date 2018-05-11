@@ -9,12 +9,10 @@ let make = (~phrase: breakerTry, _children) => {
       <div className="d-flex flew-row">
         (
           ReasonReact.array(
-            Array.of_list(
-              List.mapi(
-                (idx, phrase_color) =>
-                  <CodePeg key=(string_of_int(idx)) color=phrase_color />,
-                phrase.pegs,
-              ),
+            Array.mapi(
+              (idx, phrase_color) =>
+                <CodePeg key=(string_of_int(idx)) color=phrase_color />,
+              phrase.pegs,
             ),
           )
         )

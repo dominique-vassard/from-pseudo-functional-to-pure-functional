@@ -16,7 +16,7 @@ type gameState =
   | Win;
 
 type breakerTry = {
-  pegs: list(pegColor),
+  pegs: array(pegColor),
   result: option(bool),
 };
 
