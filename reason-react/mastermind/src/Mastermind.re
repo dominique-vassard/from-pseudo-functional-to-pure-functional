@@ -82,6 +82,21 @@ let choose_color = (state, color) =>
       } else {
         false;
       };
+    let result: option(bool) =
+      if (state.currentColorChoiceIndex
+          + 1 == 4
+          && newTries[state.currentTryIndex].pegs == state.codeToBreak.pegs) {
+        Some(true);
+      } else if (state.currentColorChoiceIndex
+                 + 1 == 4
+                 &&
+                 newTries[state.currentTryIndex].pegs != state.codeToBreak.pegs) {
+        Some(false);
+      } else {
+        None;
+      };
+    let curTry = {pegs: newTries[state.currentTryIndex].pegs, result};
+    newTries[state.currentTryIndex] = curTry;
     let currentColorChoiceIndex =
       if (state.currentColorChoiceIndex + 1 == 4) {
         0;

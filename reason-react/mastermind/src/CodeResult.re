@@ -4,7 +4,7 @@ let get_glyph = result =>
   switch (result) {
   | None => "minus"
   | Some(true) => "check"
-  | Some(false) => "remove"
+  | Some(false) => "times"
   };
 
 let get_style = result =>
