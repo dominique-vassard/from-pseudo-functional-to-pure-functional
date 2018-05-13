@@ -23,7 +23,7 @@ let get_selected = (idx, currentHistoryIndex) =>
     "";
   };
 
-let make = (~history, ~currentHistoryIndex, _children) => {
+let make = (~history, ~currentHistoryIndex, ~onClick, _children) => {
   ...historyComponent,
   render: self =>
     <div className="card bg-default">
@@ -31,30 +31,26 @@ let make = (~history, ~currentHistoryIndex, _children) => {
       <div className="card-body">
         (
           ReasonReact.array(
-            Array.of_list(
-              List.mapi(
-                (idx, _) =>
-                  <div
-                    key=("dh" ++ string_of_int(idx))
-                    className=(
-                      "link rounded "
-                      ++ get_selected(idx, currentHistoryIndex)
-                    )>
-                    <i
-                      className=(
-                        get_indicator_class(idx, currentHistoryIndex)
+            Array.mapi(
+              (idx, _) =>
+                <div
+                  key=("dh" ++ string_of_int(idx))
+                  className=(
+                    "link rounded " ++ get_selected(idx, currentHistoryIndex)
+                  )
+                  onClick=(self.handle((event, click) => onClick(idx)))>
+                  <i
+                    className=(get_indicator_class(idx, currentHistoryIndex))
+                  />
+                  <span key=("sph" ++ string_of_int(idx))>
+                    (
+                      ReasonReact.string(
+                        get_message(idx, Array.length(history) - 1),
                       )
-                    />
-                    <span key=("sph" ++ string_of_int(idx))>
-                      (
-                        ReasonReact.string(
-                          get_message(idx, List.length(history) - 1),
-                        )
-                      )
-                    </span>
-                  </div>,
-                history,
-              ),
+                    )
+                  </span>
+                </div>,
+              history,
             ),
           )
         )

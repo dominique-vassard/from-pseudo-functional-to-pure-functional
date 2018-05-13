@@ -12,13 +12,14 @@ type state = {
   currentTryIndex: int,
   currentColorChoiceIndex: int,
   gameState,
-  history: list(history),
+  history: array(history),
   historyIndex: int,
 };
 
 type action =
   | NewGame
-  | ChooseColor(pegColor);
+  | ChooseColor(pegColor)
+  | GotToHistory(int);
 
 let rec range = (start: int, end_: int) =>
   if (start >= end_) {
@@ -56,23 +57,27 @@ let new_game = state =>
     currentTryIndex: 0,
     currentColorChoiceIndex: 0,
     gameState: Try,
-    history: [
+    history: [|
       {breakerTries: initBreakerTries(state.nbMaxTries), gameState: Try},
-    ],
+    |],
     historyIndex: 0,
   });
 
+let copy_breakerTries = breakerTries =>
+  Array.map(
+    bt => {pegs: Array.copy(bt.pegs), result: bt.result},
+    breakerTries,
+  );
+
 let choose_color = (state, color) =>
   switch (state.gameState) {
-  | Try =>
-    state.breakerTries[state.currentTryIndex].pegs[state.
-                                                     currentColorChoiceIndex] = color;
+  | Try when state.historyIndex == Array.length(state.history) - 1 =>
+    let newTries = copy_breakerTries(state.breakerTries);
+    newTries[state.currentTryIndex].pegs[state.currentColorChoiceIndex] = color;
     let gameWon =
       if (state.currentColorChoiceIndex
           + 1 == 4
-          &&
-          state.breakerTries[state.currentTryIndex].pegs == state.codeToBreak.
-                                                              pegs) {
+          && newTries[state.currentTryIndex].pegs == state.codeToBreak.pegs) {
         true;
       } else {
         false;
@@ -98,9 +103,13 @@ let choose_color = (state, color) =>
         state.gameState;
       };
     let history =
-      state.history @ [{breakerTries: state.breakerTries, gameState}];
+      Array.append(
+        state.history,
+        Array.make(1, {breakerTries: newTries, gameState}),
+      );
     ReasonReact.Update({
       ...state,
+      breakerTries: newTries,
       currentTryIndex,
       currentColorChoiceIndex,
       gameState,
@@ -110,6 +119,15 @@ let choose_color = (state, color) =>
   | _ => ReasonReact.NoUpdate
   };
 
+let go_to_history = (state, historyIndex) =>
+  ReasonReact.Update({
+    ...state,
+    breakerTries: state.history[historyIndex].breakerTries,
+    gameState: state.history[historyIndex].gameState,
+    historyIndex,
+  });
+
+/* ReasonReact.NoUpdate; */
 let mastermind_component = ReasonReact.reducerComponent("Mastermind");
 
 let make = _children => {
@@ -121,13 +139,14 @@ let make = _children => {
     currentTryIndex: 0,
     currentColorChoiceIndex: 0,
     gameState: Start,
-    history: [],
+    history: [||],
     historyIndex: 0,
   },
   reducer: (action, state: state) =>
     switch (action) {
     | NewGame => new_game(state)
     | ChooseColor(color) => choose_color(state, color)
+    | GotToHistory(historyIndex) => go_to_history(state, historyIndex)
     },
   render: self =>
     <div>
@@ -173,6 +192,7 @@ let make = _children => {
             <History
               history=self.state.history
               currentHistoryIndex=self.state.historyIndex
+              onClick=(idx => self.send(GotToHistory(idx)))
             />
           </div>
         </div>
