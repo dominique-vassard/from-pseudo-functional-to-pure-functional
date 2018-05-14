@@ -1,5 +1,14 @@
 let historyComponent = ReasonReact.statelessComponent("History");
 
+/**
+ * Return message to use depending on hisoty index
+ *
+ * @param   int          idx            The index
+ * @param   int          nbHistories      The number of histories
+ *
+ * @returns string                      The message string
+ *
+ */
 let get_message = (idx, nbHistories) =>
   if (idx == 0) {
     "Start";
@@ -9,6 +18,15 @@ let get_message = (idx, nbHistories) =>
     "Move #" ++ string_of_int(idx);
   };
 
+/**
+   * Return indicator to display depending on the index
+   *
+   * @param   int       idx             The index
+   * @param   int       currentHistory  The curent hisory index
+   *
+   * @returns string                     The indicator
+   *
+   */
 let get_indicator_class = (idx, currentHistoryIndex) =>
   if (idx == currentHistoryIndex) {
     "fas fa-angle-right";
@@ -16,6 +34,15 @@ let get_indicator_class = (idx, currentHistoryIndex) =>
     "";
   };
 
+/**
+   * Return selected status to use depending on the index
+   *
+   * @param   int       idx             The index
+   * @param   int       currentHistory  The curent hisory index
+   *
+   * @returns string                     The selected class
+   *
+   */
 let get_selected = (idx, currentHistoryIndex) =>
   if (idx == currentHistoryIndex) {
     "selected-history";
@@ -23,6 +50,7 @@ let get_selected = (idx, currentHistoryIndex) =>
     "";
   };
 
+/* Component definition */
 let make = (~history, ~currentHistoryIndex, ~onClick, _children) => {
   ...historyComponent,
   render: self =>

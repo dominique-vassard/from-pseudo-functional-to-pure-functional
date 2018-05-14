@@ -2,6 +2,14 @@ open Types;
 
 let component = ReasonReact.statelessComponent("ControlPanel");
 
+/**
+ * Return message to use depending on gameState
+ *
+ * @param   gameState    gameState      The game State
+ *
+ * @returns string                      The message string
+ *
+ */
 let get_message = (gameState: gameState) =>
   switch (gameState) {
   | Start => "Click 'New Game' to start."
@@ -10,6 +18,14 @@ let get_message = (gameState: gameState) =>
   | Win => "You won"
   };
 
+/**
+ * Return style to use depending on gameState
+ *
+ * @param   gameState    gameState      The game State
+ *
+ * @returns string                      The style string
+ *
+ */
 let get_style = (gameState: gameState) =>
   switch (gameState) {
   | Start => "info"
@@ -18,6 +34,7 @@ let get_style = (gameState: gameState) =>
   | Win => "success"
   };
 
+/* Component definition */
 let make = (~onClick, ~gameState, _children) => {
   ...component,
   render: _self =>

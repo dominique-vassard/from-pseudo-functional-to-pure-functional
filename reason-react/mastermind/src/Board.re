@@ -1,5 +1,6 @@
 let board = ReasonReact.statelessComponent("Board");
 
+/* Component definition */
 let make = (~breakerTries, ~codeToBreak, _children) => {
   ...board,
   render: _self =>

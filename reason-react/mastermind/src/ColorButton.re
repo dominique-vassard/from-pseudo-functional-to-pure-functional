@@ -1,5 +1,6 @@
 let colorButton = ReasonReact.statelessComponent("ColorButton");
 
+/* Component definition */
 let make = (~color, ~onClick, _children) => {
   ...colorButton,
   render: _self =>

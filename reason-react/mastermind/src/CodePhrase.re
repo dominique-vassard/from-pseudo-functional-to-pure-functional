@@ -2,6 +2,7 @@ open Types;
 
 let codePhrase = ReasonReact.statelessComponent("CodePhrase");
 
+/* Component definition */
 let make = (~phrase: breakerTry, _children) => {
   ...codePhrase,
   render: _self =>

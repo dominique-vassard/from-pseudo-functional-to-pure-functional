@@ -1,5 +1,13 @@
 let codeResult = ReasonReact.statelessComponent("CodeResult");
 
+/**
+ * Return glyph to use depending on result
+ *
+ * @param   option(bool)    result      The result
+ *
+ * @returns string                      The glyph name
+ *
+ */
 let get_glyph = result =>
   switch (result) {
   | None => "minus"
@@ -7,6 +15,14 @@ let get_glyph = result =>
   | Some(false) => "times"
   };
 
+/**
+ * Return style to use depending on result
+ *
+ * @param   option(bool)    result      The result
+ *
+ * @returns string                      The style string
+ *
+ */
 let get_style = result =>
   switch (result) {
   | None => "text-muted"
@@ -14,6 +30,7 @@ let get_style = result =>
   | Some(false) => "text-danger"
   };
 
+/* Component definition */
 let make = (~result, _children) => {
   ...codeResult,
   render: _self =>

@@ -15,11 +15,13 @@ type gameState =
   | Lost
   | Win;
 
+/* Breakertry */
 type breakerTry = {
   pegs: array(pegColor),
   result: option(bool),
 };
 
+/* Choosable pegColor list */
 let enumChoosablePegColors = () => [|
   Blue,
   Green,

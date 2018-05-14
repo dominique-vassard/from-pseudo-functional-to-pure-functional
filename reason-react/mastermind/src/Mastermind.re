@@ -1,10 +1,12 @@
 open Types;
 
+/* Hisotry types */
 type history = {
   breakerTries: array(breakerTry),
   gameState,
 };
 
+/* State (model) type */
 type state = {
   nbMaxTries: int,
   breakerTries: array(breakerTry),
@@ -16,18 +18,20 @@ type state = {
   historyIndex: int,
 };
 
+/* Available actions */
 type action =
   | NewGame
   | ChooseColor(pegColor)
   | GotToHistory(int);
 
-let rec range = (start: int, end_: int) =>
-  if (start >= end_) {
-    [];
-  } else {
-    [start, ...range(start + 1, end_)];
-  };
-
+/**
+ * Initialize pegs color
+ *
+ * @param     int   start     From which int to start
+ *
+ * @returns   list            A list of pegColor
+ *
+ */
 let rec init_code_pegs = start =>
   if (start >= 4) {
     [];
@@ -39,16 +43,38 @@ let rec init_code_pegs = start =>
     ];
   };
 
+/**
+ * Initializes code to break
+ *
+ * @returns     breakerTry      The code to break
+ */
 let init_code_to_break = () => {
   pegs: Array.of_list(init_code_pegs(0)),
   result: None,
 };
 
+/**
+ * Return a default breakerTry, i.e all Grey with enmpty result
+ *
+ * @returns     breakerTry      A default breakerTry
+ */
 let initBreakerTry = () => {pegs: Array.init(4, (_) => Grey), result: None};
 
+/**
+ * Initializes list of beakerTries
+ *
+ * @param     int    nbMaxTries   The maximum number of tries
+ *
+ * @returns   breakerTries        An array of breakerTry
+ */
 let initBreakerTries = (nbMaxTries: int) =>
   Array.init(nbMaxTries, (_) => initBreakerTry());
 
+/**
+ * Set the state for a new game
+ *
+ * @param   state     state
+ */
 let new_game = state =>
   ReasonReact.Update({
     ...state,
@@ -63,12 +89,26 @@ let new_game = state =>
     historyIndex: 0,
   });
 
+/**
+ * Copy a breakerTries Array
+ *
+ * @param     breakerTries    The original
+ *
+ * @returns   breakerTries    The copy
+ */
 let copy_breakerTries = breakerTries =>
   Array.map(
     bt => {pegs: Array.copy(bt.pegs), result: bt.result},
     breakerTries,
   );
 
+/**
+   * Manage action: ChooseColor
+   * Update state depending on the color (and the game win/lose)
+   *
+   * @param     state     state     The current state
+   * @param     pegColor  color     The chosen color
+   */
 let choose_color = (state, color) =>
   switch (state.gameState) {
   | Try when state.historyIndex == Array.length(state.history) - 1 =>
@@ -134,6 +174,12 @@ let choose_color = (state, color) =>
   | _ => ReasonReact.NoUpdate
   };
 
+/**
+   * Go to given history index
+   *
+   * @param     state     state         The current state
+   * @param     int       historyIndex  The wanted hisotryIndex
+   */
 let go_to_history = (state, historyIndex) =>
   ReasonReact.Update({
     ...state,
@@ -145,6 +191,7 @@ let go_to_history = (state, historyIndex) =>
 /* ReasonReact.NoUpdate; */
 let mastermind_component = ReasonReact.reducerComponent("Mastermind");
 
+/* Component definition */
 let make = _children => {
   ...mastermind_component,
   initialState: () => {
