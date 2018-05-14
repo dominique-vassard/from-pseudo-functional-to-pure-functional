@@ -121,7 +121,7 @@ toColor pegColor =
             "green"
 
         Grey ->
-            "lightgrey"
+            "grey"
 
         Orange ->
             "orange"
