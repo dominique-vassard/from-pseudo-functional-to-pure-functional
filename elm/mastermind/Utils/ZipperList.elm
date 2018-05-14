@@ -9,6 +9,7 @@ module Utils.ZipperList
         , update
         , hasPrevious
         , hasNext
+        , toList
         )
 
 {-| This module is designed to provide a simple ZipperList.
@@ -101,7 +102,7 @@ back items =
                             items.previous
                                 |> List.reverse
                                 |> List.tail
-                                |> toList
+                                |> maybeListToList
                                 |> List.reverse
                         , current = current
                         , next = items.current :: items.next
@@ -136,7 +137,7 @@ forward items =
                         , next =
                             items.next
                                 |> List.tail
-                                |> toList
+                                |> maybeListToList
                     }
 
                 Maybe.Nothing ->
@@ -217,15 +218,20 @@ hasNext items =
 
 {-| Convert a `Maybe List` to a `List`
 
-    toList (Just [1, 2]) == [1, 2]
-    toList Nothing == []
+    maybeListToList (Just [1, 2]) == [1, 2]
+    maybeListToList Nothing == []
 
 -}
-toList : Maybe (List a) -> List a
-toList items =
+maybeListToList : Maybe (List a) -> List a
+maybeListToList items =
     case items of
         Maybe.Just list ->
             list
 
         Maybe.Nothing ->
             []
+
+
+toList : ZipperList item -> List item
+toList zipperList =
+    zipperList.previous ++ [ zipperList.current ] ++ zipperList.next
