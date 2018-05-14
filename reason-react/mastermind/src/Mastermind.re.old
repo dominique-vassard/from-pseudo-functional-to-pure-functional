@@ -191,29 +191,25 @@ let go_to_history = (state, historyIndex) =>
 /* ReasonReact.NoUpdate; */
 let mastermind_component = ReasonReact.reducerComponent("Mastermind");
 
-let init = () => {
-  nbMaxTries: 10,
-  breakerTries: initBreakerTries(10),
-  codeToBreak: initBreakerTry(),
-  currentTryIndex: 0,
-  currentColorChoiceIndex: 0,
-  gameState: Start,
-  history: [||],
-  historyIndex: 0,
-};
-
-let reduce = (action, state: state) =>
-  switch (action) {
-  | NewGame => new_game(state)
-  | ChooseColor(color) => choose_color(state, color)
-  | GotToHistory(historyIndex) => go_to_history(state, historyIndex)
-  };
-
 /* Component definition */
 let make = _children => {
   ...mastermind_component,
-  initialState: init,
-  reducer: reduce,
+  initialState: () => {
+    nbMaxTries: 10,
+    breakerTries: initBreakerTries(10),
+    codeToBreak: initBreakerTry(),
+    currentTryIndex: 0,
+    currentColorChoiceIndex: 0,
+    gameState: Start,
+    history: [||],
+    historyIndex: 0,
+  },
+  reducer: (action, state: state) =>
+    switch (action) {
+    | NewGame => new_game(state)
+    | ChooseColor(color) => choose_color(state, color)
+    | GotToHistory(historyIndex) => go_to_history(state, historyIndex)
+    },
   render: self =>
     <div>
       <header className="app-header">
