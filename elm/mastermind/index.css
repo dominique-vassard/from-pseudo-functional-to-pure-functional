@@ -24,6 +24,11 @@ body {
     background-color: #DDD;
 }
 
+.color-button {
+    font-size: 0.5em;
+    margin: 0.25em;
+}
+
 .selected-history {
     background-color: #EEE;
 }

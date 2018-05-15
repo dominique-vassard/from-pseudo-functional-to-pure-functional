@@ -2,12 +2,18 @@ module Main exposing (..)
 
 import Html exposing (Html, program, div, header, h1, text)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Utils.ZipperList as ZipperList exposing (..)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Grid.Col as Col
 import Bootstrap.ListGroup as ListGroup
+import Bootstrap.Button as Button
+import Bootstrap.Alert as Alert
+import Bootstrap.Card as Card
+import Bootstrap.Card.Block as Block
+import FontAwesome exposing (iconWithOptions, check, times, minus, Size)
 
 
 main : Program Never Model Msg
@@ -56,6 +62,11 @@ type alias Model =
 nbMaxTries : Int
 nbMaxTries =
     10
+
+
+choosableColors : List PegColor
+choosableColors =
+    [ Blue, Green, Orange, Purple, Red, Yellow ]
 
 
 init : ( Model, Cmd Msg )
@@ -140,28 +151,64 @@ view : Model -> Html Msg
 view model =
     Grid.container []
         [ CDN.stylesheet
-        , header []
-            [ h1 [ class "text-center" ] [ text "Mastermind" ]
+        , FontAwesome.useSvg
+        , header [ class "app-header" ]
+            [ h1 [ class "text-center title" ] [ text "Mastermind" ]
             ]
-        , Grid.container [ class "container jumbotron" ]
-            [ Grid.row []
+        , Grid.container [ class "jumbotron" ]
+            [ viewControlPanel model.gameState
+            , Grid.row []
                 [ Grid.col [ Col.md1 ] []
                 , Grid.col [ Col.md4 ]
                     [ viewBoard model.breakerTries model.codeToBreak
                     ]
                 , Grid.col [ Col.md1 ] []
-                , Grid.col [ Col.md5 ] []
+                , Grid.col [ Col.md5 ]
+                    [ viewColorChooser
+                    ]
                 , Grid.col [ Col.md1 ] []
                 ]
             ]
         ]
 
 
+viewControlPanel : GameState -> Html Msg
+viewControlPanel gameState =
+    Grid.row []
+        [ Grid.col [ Col.md1 ]
+            [ Button.button [ Button.primary, Button.attrs [ onClick NewGame ] ] [ text "NewGame" ]
+            ]
+        , Grid.col [ Col.md1 ] []
+        , Grid.col [ Col.md10 ]
+            [ viewGameStateMessage gameState
+            ]
+        ]
+
+
+viewGameStateMessage : GameState -> Html Msg
+viewGameStateMessage gameState =
+    case gameState of
+        Start ->
+            Alert.simpleInfo [] [ text "Click 'New Game' to start." ]
+
+        Try ->
+            Alert.simpleWarning [] [ text "Try to break the code." ]
+
+        Win ->
+            Alert.simpleSuccess [] [ text "You won!" ]
+
+        Lose ->
+            Alert.simpleDanger [] [ text "You lose!" ]
+
+
 viewBoard : ZipperList BreakerTry -> CodeToBreak -> Html Msg
 viewBoard breakerTries codeToBreak =
-    ListGroup.ul
-        [ viewCodeToBreak codeToBreak
-        ]
+    ListGroup.ul <|
+        List.map
+            viewBreakerTry
+            (ZipperList.toList breakerTries)
+            ++ [ viewCodeToBreak codeToBreak
+               ]
 
 
 viewCodeToBreak : CodeToBreak -> ListGroup.Item Msg
@@ -169,6 +216,71 @@ viewCodeToBreak codeToBreak =
     ListGroup.li [] [ div [ class "d-flex flex-row" ] <| List.map viewCodePeg codeToBreak ]
 
 
+viewBreakerTry : BreakerTry -> ListGroup.Item Msg
+viewBreakerTry breakerTry =
+    ListGroup.li []
+        [ div [ class "d-flex flex-row" ] <|
+            List.map viewCodePeg (ZipperList.toList breakerTry.pegs)
+                ++ [ viewResult breakerTry.result ]
+        ]
+
+
 viewCodePeg : PegColor -> Html Msg
 viewCodePeg pegColor =
     div [ class <| "codepeg-" ++ (toColor pegColor) ++ " rounded-circle" ] []
+
+
+viewResult : Maybe Bool -> Html Msg
+viewResult result =
+    let
+        glyph =
+            case result of
+                Just True ->
+                    check
+
+                Just False ->
+                    times
+
+                Nothing ->
+                    minus
+
+        style_ =
+            case result of
+                Just True ->
+                    "text-success"
+
+                Just False ->
+                    "text-danger"
+
+                Nothing ->
+                    "text-muted"
+    in
+        div [ class "d-flex" ]
+            [ iconWithOptions glyph
+                FontAwesome.Solid
+                [ FontAwesome.Size FontAwesome.Large ]
+                [ class <| "glyphicon " ++ style_
+                ]
+            ]
+
+
+viewColorChooser : Html Msg
+viewColorChooser =
+    Card.config []
+        |> Card.headerH5 [] [ text "Choose a color" ]
+        |> Card.block []
+            [ Block.custom <| div [] <| List.map viewColorButton choosableColors
+            ]
+        |> Card.view
+
+
+viewColorButton : PegColor -> Html Msg
+viewColorButton pegColor =
+    Button.button
+        [ Button.outlineSecondary
+        , Button.attrs
+            [ class "color-button"
+            , onClick <| ChooseColor pegColor
+            ]
+        ]
+        [ viewCodePeg pegColor ]
