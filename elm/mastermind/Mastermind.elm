@@ -3,6 +3,8 @@ module Main exposing (..)
 import Html exposing (Html, program, div, header, h1, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Array
+import Random
 import Utils.ZipperList as ZipperList exposing (..)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
@@ -18,7 +20,12 @@ import FontAwesome exposing (iconWithOptions, check, times, minus, Size)
 
 main : Program Never Model Msg
 main =
-    Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 
@@ -56,6 +63,7 @@ type alias Model =
     { breakerTries : ZipperList BreakerTry
     , codeToBreak : CodeToBreak
     , gameState : GameState
+    , randomSeed : Random.Seed
     }
 
 
@@ -69,18 +77,50 @@ choosableColors =
     [ Blue, Green, Orange, Purple, Red, Yellow ]
 
 
+getColor : Int -> PegColor
+getColor color_ =
+    Maybe.withDefault Grey <|
+        Array.get color_ <|
+            Array.fromList choosableColors
+
+
+randomColor : Random.Generator PegColor
+randomColor =
+    Random.map (\x -> getColor x)
+        (Random.int 0 <|
+            (List.length choosableColors - 1)
+        )
+
+
+generateCodeToBreak : Random.Seed -> ( CodeToBreak, Random.Seed )
+generateCodeToBreak initSeed =
+    List.foldl
+        (\_ ( colorList, seed ) ->
+            let
+                ( res, newSeed ) =
+                    Random.step randomColor seed
+            in
+                ( res :: colorList, newSeed )
+        )
+        ( [], initSeed )
+        (List.range 0 3)
+
+
 init : ( Model, Cmd Msg )
 init =
     { breakerTries = initBreakerTries
     , codeToBreak = List.repeat 4 Grey
     , gameState = Start
+    , randomSeed = Random.initialSeed 6546146466468
     }
         ! []
 
 
 initBreakerTries : ZipperList BreakerTry
 initBreakerTries =
-    ZipperList.init initBreakerTry <| List.repeat (nbMaxTries - 1) initBreakerTry
+    ZipperList.init initBreakerTry <|
+        List.repeat (nbMaxTries - 1)
+            initBreakerTry
 
 
 initBreakerTry : BreakerTry
@@ -103,7 +143,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewGame ->
-            model ! []
+            let
+                ( newCode, newSeed ) =
+                    generateCodeToBreak model.randomSeed
+            in
+                { model
+                    | breakerTries = initBreakerTries
+                    , codeToBreak = newCode
+                    , gameState = Try
+                    , randomSeed = newSeed
+                }
+                    ! []
 
         ChooseColor color ->
             model ! []
@@ -176,7 +226,13 @@ viewControlPanel : GameState -> Html Msg
 viewControlPanel gameState =
     Grid.row []
         [ Grid.col [ Col.md1 ]
-            [ Button.button [ Button.primary, Button.attrs [ onClick NewGame ] ] [ text "NewGame" ]
+            [ Button.button
+                [ Button.primary
+                , Button.attrs
+                    [ onClick NewGame
+                    ]
+                ]
+                [ text "NewGame" ]
             ]
         , Grid.col [ Col.md1 ] []
         , Grid.col [ Col.md10 ]
@@ -213,7 +269,10 @@ viewBoard breakerTries codeToBreak =
 
 viewCodeToBreak : CodeToBreak -> ListGroup.Item Msg
 viewCodeToBreak codeToBreak =
-    ListGroup.li [] [ div [ class "d-flex flex-row" ] <| List.map viewCodePeg codeToBreak ]
+    ListGroup.li []
+        [ div [ class "d-flex flex-row" ] <|
+            List.map viewCodePeg codeToBreak
+        ]
 
 
 viewBreakerTry : BreakerTry -> ListGroup.Item Msg
