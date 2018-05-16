@@ -8,14 +8,13 @@ import Random
 import Utils.ZipperList as ZipperList exposing (..)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Row as Row
 import Bootstrap.Grid.Col as Col
 import Bootstrap.ListGroup as ListGroup
 import Bootstrap.Button as Button
 import Bootstrap.Alert as Alert
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
-import FontAwesome exposing (iconWithOptions, check, times, minus, Size)
+import FontAwesome exposing (icon, iconWithOptions, check, times, minus, Size)
 
 
 main : Program Never Model Msg
@@ -155,8 +154,70 @@ update msg model =
                 }
                     ! []
 
-        ChooseColor color ->
-            model ! []
+        ChooseColor color_ ->
+            let
+                breakerTry =
+                    ZipperList.current model.breakerTries
+
+                newBreakerTry =
+                    { breakerTry | pegs = ((ZipperList.update color_) << .pegs) breakerTry }
+
+                breakerTries =
+                    ZipperList.update newBreakerTry model.breakerTries
+
+                gameState =
+                    case ZipperList.hasNext breakerTries == False && (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries == False of
+                        True ->
+                            Lose
+
+                        False ->
+                            model.gameState
+
+                endGameState =
+                    case (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries == False && (checkTry (ZipperList.current breakerTries) model.codeToBreak) == Just True of
+                        True ->
+                            Win
+
+                        False ->
+                            gameState
+
+                breakerTry_ =
+                    ZipperList.current breakerTries
+
+                newBreakerTry_ =
+                    case (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries of
+                        False ->
+                            { breakerTry_ | result = checkTry (ZipperList.current breakerTries) model.codeToBreak }
+
+                        _ ->
+                            breakerTry_
+
+                breakerTries_ =
+                    ZipperList.update newBreakerTry_ breakerTries
+
+                newBreakerTries =
+                    case ZipperList.hasNext newBreakerTry_.pegs of
+                        True ->
+                            let
+                                nTry =
+                                    { newBreakerTry_ | pegs = (ZipperList.forward << .pegs << ZipperList.current) breakerTries_ }
+                            in
+                                ZipperList.update nTry breakerTries_
+
+                        False ->
+                            ZipperList.forward breakerTries_
+            in
+                { model | breakerTries = newBreakerTries, gameState = gameState } ! []
+
+
+checkTry : BreakerTry -> CodeToBreak -> Maybe Bool
+checkTry breakerTry codeToBreak =
+    Just <| ZipperList.toList breakerTry.pegs == codeToBreak
+
+
+isEndOfTries : ZipperList BreakerTry -> Bool
+isEndOfTries breakerTries =
+    ZipperList.hasNext breakerTries == False && (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries == False
 
 
 
@@ -201,7 +262,7 @@ view : Model -> Html Msg
 view model =
     Grid.container []
         [ CDN.stylesheet
-        , FontAwesome.useSvg
+        , FontAwesome.useCss
         , header [ class "app-header" ]
             [ h1 [ class "text-center title" ] [ text "Mastermind" ]
             ]
@@ -214,7 +275,7 @@ view model =
                     ]
                 , Grid.col [ Col.md1 ] []
                 , Grid.col [ Col.md5 ]
-                    [ viewColorChooser
+                    [ viewColorChooser model.gameState
                     ]
                 , Grid.col [ Col.md1 ] []
                 ]
@@ -323,23 +384,32 @@ viewResult result =
             ]
 
 
-viewColorChooser : Html Msg
-viewColorChooser =
+viewColorChooser : GameState -> Html Msg
+viewColorChooser gameState =
     Card.config []
         |> Card.headerH5 [] [ text "Choose a color" ]
         |> Card.block []
-            [ Block.custom <| div [] <| List.map viewColorButton choosableColors
+            [ Block.custom <| div [] <| List.map (viewColorButton gameState) choosableColors
             ]
         |> Card.view
 
 
-viewColorButton : PegColor -> Html Msg
-viewColorButton pegColor =
-    Button.button
-        [ Button.outlineSecondary
-        , Button.attrs
-            [ class "color-button"
-            , onClick <| ChooseColor pegColor
+viewColorButton : GameState -> PegColor -> Html Msg
+viewColorButton gameState pegColor =
+    let
+        supAttrs =
+            case gameState of
+                Try ->
+                    [ onClick <| ChooseColor pegColor ]
+
+                _ ->
+                    []
+    in
+        Button.button
+            [ Button.outlineSecondary
+            , Button.attrs <|
+                [ class "color-button"
+                ]
+                    ++ supAttrs
             ]
-        ]
-        [ viewCodePeg pegColor ]
+            [ viewCodePeg pegColor ]
