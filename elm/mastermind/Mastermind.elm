@@ -16,9 +16,9 @@ import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , view = view
         , update = update
@@ -65,6 +65,11 @@ type alias Model =
     }
 
 
+type alias Flags =
+    { initSeed : Int
+    }
+
+
 nbMaxTries : Int
 nbMaxTries =
     10
@@ -104,12 +109,12 @@ generateCodeToBreak initSeed =
         (List.range 0 3)
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     { breakerTries = initBreakerTries
     , codeToBreak = List.repeat 4 Grey
     , gameState = Start
-    , randomSeed = Random.initialSeed 6546146466468
+    , randomSeed = Random.initialSeed flags.initSeed
     }
         ! []
 
