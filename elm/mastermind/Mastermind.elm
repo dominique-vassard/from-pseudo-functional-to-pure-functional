@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, program, div, header, h1, text)
+import Html exposing (Html, program, div, header, h1, i, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Array
@@ -14,7 +14,6 @@ import Bootstrap.Button as Button
 import Bootstrap.Alert as Alert
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
-import FontAwesome exposing (icon, iconWithOptions, check, times, minus, Size)
 
 
 main : Program Never Model Msg
@@ -207,7 +206,7 @@ update msg model =
                         False ->
                             ZipperList.forward breakerTries_
             in
-                { model | breakerTries = newBreakerTries, gameState = gameState } ! []
+                { model | breakerTries = newBreakerTries, gameState = endGameState } ! []
 
 
 checkTry : BreakerTry -> CodeToBreak -> Maybe Bool
@@ -262,7 +261,6 @@ view : Model -> Html Msg
 view model =
     Grid.container []
         [ CDN.stylesheet
-        , FontAwesome.useCss
         , header [ class "app-header" ]
             [ h1 [ class "text-center title" ] [ text "Mastermind" ]
             ]
@@ -356,13 +354,13 @@ viewResult result =
         glyph =
             case result of
                 Just True ->
-                    check
+                    "check"
 
                 Just False ->
-                    times
+                    "times"
 
                 Nothing ->
-                    minus
+                    "minus"
 
         style_ =
             case result of
@@ -376,11 +374,10 @@ viewResult result =
                     "text-muted"
     in
         div [ class "d-flex" ]
-            [ iconWithOptions glyph
-                FontAwesome.Solid
-                [ FontAwesome.Size FontAwesome.Large ]
-                [ class <| "glyphicon " ++ style_
+            [ i
+                [ class <| "glyphicon fas fa-" ++ glyph ++ " " ++ style_
                 ]
+                []
             ]
 
 
