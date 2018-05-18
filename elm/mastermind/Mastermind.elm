@@ -57,11 +57,16 @@ type alias CodeToBreak =
     List PegColor
 
 
+type alias History =
+    ZipperList (ZipperList BreakerTry)
+
+
 type alias Model =
     { breakerTries : ZipperList BreakerTry
     , codeToBreak : CodeToBreak
     , gameState : GameState
     , randomSeed : Random.Seed
+    , history : History
     }
 
 
@@ -109,16 +114,6 @@ generateCodeToBreak initSeed =
         (List.range 0 3)
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    { breakerTries = initBreakerTries
-    , codeToBreak = List.repeat 4 Grey
-    , gameState = Start
-    , randomSeed = Random.initialSeed flags.initSeed
-    }
-        ! []
-
-
 initBreakerTries : ZipperList BreakerTry
 initBreakerTries =
     ZipperList.init initBreakerTry <|
@@ -131,6 +126,22 @@ initBreakerTry =
     { pegs = ZipperList.init Grey <| List.repeat 3 Grey
     , result = Nothing
     }
+
+
+initHistory : History
+initHistory =
+    ZipperList.init initBreakerTries []
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    { breakerTries = initBreakerTries
+    , codeToBreak = List.repeat 4 Grey
+    , gameState = Start
+    , randomSeed = Random.initialSeed flags.initSeed
+    , history = ZipperList.init initBreakerTries []
+    }
+        ! []
 
 
 
@@ -155,6 +166,7 @@ update msg model =
                     , codeToBreak = newCode
                     , gameState = Try
                     , randomSeed = newSeed
+                    , history = initHistory
                 }
                     ! []
 
@@ -191,7 +203,9 @@ update msg model =
                 newBreakerTry_ =
                     case (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries of
                         False ->
-                            { breakerTry_ | result = checkTry (ZipperList.current breakerTries) model.codeToBreak }
+                            { breakerTry_
+                                | result = checkTry (ZipperList.current breakerTries) model.codeToBreak
+                            }
 
                         _ ->
                             breakerTry_
@@ -204,14 +218,21 @@ update msg model =
                         True ->
                             let
                                 nTry =
-                                    { newBreakerTry_ | pegs = (ZipperList.forward << .pegs << ZipperList.current) breakerTries_ }
+                                    { newBreakerTry_
+                                        | pegs = (ZipperList.forward << .pegs << ZipperList.current) breakerTries_
+                                    }
                             in
                                 ZipperList.update nTry breakerTries_
 
                         False ->
                             ZipperList.forward breakerTries_
             in
-                { model | breakerTries = newBreakerTries, gameState = endGameState } ! []
+                { model
+                    | breakerTries = newBreakerTries
+                    , gameState = endGameState
+                    , history = ZipperList.add newBreakerTries model.history
+                }
+                    ! []
 
 
 checkTry : BreakerTry -> CodeToBreak -> Maybe Bool
@@ -279,6 +300,7 @@ view model =
                 , Grid.col [ Col.md1 ] []
                 , Grid.col [ Col.md5 ]
                     [ viewColorChooser model.gameState
+                    , viewHistory model.gameState model.history
                     ]
                 , Grid.col [ Col.md1 ] []
                 ]
@@ -415,3 +437,29 @@ viewColorButton gameState pegColor =
                     ++ supAttrs
             ]
             [ viewCodePeg pegColor ]
+
+
+viewHistory : GameState -> History -> Html Msg
+viewHistory gameState history =
+    let
+        histories =
+            case gameState of
+                Start ->
+                    div [] []
+
+                _ ->
+                    div [] <| List.map viewHistoryLine <| List.range 0 ((List.length <| ZipperList.toList history) - 1)
+    in
+        Card.config []
+            |> Card.headerH5 [] [ text "Your moves" ]
+            |> Card.block []
+                [ Block.custom histories
+                ]
+            |> Card.view
+
+
+viewHistoryLine : Int -> Html Msg
+viewHistoryLine num =
+    div []
+        [ text <| "Move #" ++ (toString num)
+        ]
