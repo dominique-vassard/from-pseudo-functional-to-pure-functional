@@ -151,6 +151,7 @@ init flags =
 type Msg
     = NewGame
     | ChooseColor PegColor
+    | MoveHistory Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -233,6 +234,19 @@ update msg model =
                     , history = ZipperList.add newBreakerTries model.history
                 }
                     ! []
+
+        MoveHistory step ->
+            let
+                func =
+                    if step > 0 then
+                        ZipperList.forward
+                    else
+                        ZipperList.back
+
+                history =
+                    List.foldl (\_ acc -> func acc) model.history <| List.range 0 ((abs step) - 1)
+            in
+                { model | breakerTries = ZipperList.current history, history = history } ! []
 
 
 checkTry : BreakerTry -> CodeToBreak -> Maybe Bool
@@ -439,6 +453,18 @@ viewColorButton gameState pegColor =
             [ viewCodePeg pegColor ]
 
 
+toDisplayableHistories : History -> List ( Int, Int )
+toDisplayableHistories history =
+    let
+        curIndex =
+            List.length history.previous
+
+        idxList =
+            ZipperList.toList history |> (Array.fromList >> Array.toIndexedList)
+    in
+        List.foldl (\( idx, val ) acc -> acc ++ [ ( idx, idx - curIndex ) ]) [] idxList
+
+
 viewHistory : GameState -> History -> Html Msg
 viewHistory gameState history =
     let
@@ -448,7 +474,7 @@ viewHistory gameState history =
                     div [] []
 
                 _ ->
-                    div [] <| List.map viewHistoryLine <| List.range 0 ((List.length <| ZipperList.toList history) - 1)
+                    div [] <| List.map viewHistoryLine <| toDisplayableHistories history
     in
         Card.config []
             |> Card.headerH5 [] [ text "Your moves" ]
@@ -458,8 +484,8 @@ viewHistory gameState history =
             |> Card.view
 
 
-viewHistoryLine : Int -> Html Msg
-viewHistoryLine num =
-    div []
-        [ text <| "Move #" ++ (toString num)
+viewHistoryLine : ( Int, Int ) -> Html Msg
+viewHistoryLine ( idx, step ) =
+    div [ onClick (MoveHistory step) ]
+        [ text <| "Move #" ++ (toString idx)
         ]
