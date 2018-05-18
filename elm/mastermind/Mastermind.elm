@@ -297,6 +297,18 @@ toColor pegColor =
             "yellow"
 
 
+toDisplayableHistories : History -> List ( Int, Int )
+toDisplayableHistories history =
+    let
+        curIndex =
+            List.length history.previous
+
+        idxList =
+            ZipperList.toList history |> (Array.fromList >> Array.toIndexedList)
+    in
+        List.foldl (\( idx, val ) acc -> acc ++ [ ( idx, idx - curIndex ) ]) [] idxList
+
+
 view : Model -> Html Msg
 view model =
     Grid.container []
@@ -453,28 +465,53 @@ viewColorButton gameState pegColor =
             [ viewCodePeg pegColor ]
 
 
-toDisplayableHistories : History -> List ( Int, Int )
-toDisplayableHistories history =
-    let
-        curIndex =
-            List.length history.previous
-
-        idxList =
-            ZipperList.toList history |> (Array.fromList >> Array.toIndexedList)
-    in
-        List.foldl (\( idx, val ) acc -> acc ++ [ ( idx, idx - curIndex ) ]) [] idxList
-
-
 viewHistory : GameState -> History -> Html Msg
 viewHistory gameState history =
     let
+        historyLines =
+            case toDisplayableHistories history of
+                [] ->
+                    []
+
+                [ ( idx, step ) ] ->
+                    [ ( "Start", step ) ]
+
+                [ ( _, step ), ( _, stepTail ) ] ->
+                    [ ( "Start", step ), ( "Resume", stepTail ) ]
+
+                ( _, step ) :: xs ->
+                    let
+                        start =
+                            ( "Start", step )
+
+                        end =
+                            case List.reverse xs of
+                                ( _, stepTail ) :: rest ->
+                                    ( "Resume", stepTail )
+
+                                [] ->
+                                    ( "Resume", 0 )
+
+                        rest_ =
+                            case List.reverse xs of
+                                _ :: rest ->
+                                    List.reverse rest
+
+                                [] ->
+                                    []
+
+                        mid =
+                            List.foldl (\( idx_, step_ ) acc -> acc ++ [ ( "Move #" ++ (toString idx_), step_ ) ]) [] rest_
+                    in
+                        start :: (mid ++ [ end ])
+
         histories =
             case gameState of
                 Start ->
                     div [] []
 
                 _ ->
-                    div [] <| List.map viewHistoryLine <| toDisplayableHistories history
+                    div [] <| List.map viewHistoryLine historyLines
     in
         Card.config []
             |> Card.headerH5 [] [ text "Your moves" ]
@@ -484,8 +521,8 @@ viewHistory gameState history =
             |> Card.view
 
 
-viewHistoryLine : ( Int, Int ) -> Html Msg
-viewHistoryLine ( idx, step ) =
+viewHistoryLine : ( String, Int ) -> Html Msg
+viewHistoryLine ( message, step ) =
     div [ onClick (MoveHistory step) ]
-        [ text <| "Move #" ++ (toString idx)
+        [ text message
         ]
