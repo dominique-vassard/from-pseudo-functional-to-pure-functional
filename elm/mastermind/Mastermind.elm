@@ -177,26 +177,28 @@ update msg model =
                     ZipperList.current model.breakerTries
 
                 newBreakerTry =
-                    { breakerTry | pegs = ((ZipperList.update color_) << .pegs) breakerTry }
+                    { breakerTry
+                        | pegs = ((ZipperList.update color_) << .pegs) breakerTry
+                    }
 
                 breakerTries =
                     ZipperList.update newBreakerTry model.breakerTries
 
-                gameState =
-                    case ZipperList.hasNext breakerTries == False && (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries == False of
-                        True ->
+                endGameState =
+                    case
+                        ( ZipperList.hasNext breakerTries
+                        , (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries
+                        , checkTry (ZipperList.current breakerTries) model.codeToBreak
+                        )
+                    of
+                        ( False, False, _ ) ->
                             Lose
 
-                        False ->
-                            model.gameState
-
-                endGameState =
-                    case (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries == False && (checkTry (ZipperList.current breakerTries) model.codeToBreak) == Just True of
-                        True ->
+                        ( _, False, Just True ) ->
                             Win
 
-                        False ->
-                            gameState
+                        _ ->
+                            model.gameState
 
                 breakerTry_ =
                     ZipperList.current breakerTries
@@ -205,7 +207,10 @@ update msg model =
                     case (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries of
                         False ->
                             { breakerTry_
-                                | result = checkTry (ZipperList.current breakerTries) model.codeToBreak
+                                | result =
+                                    checkTry
+                                        (ZipperList.current breakerTries)
+                                        model.codeToBreak
                             }
 
                         _ ->
@@ -220,7 +225,12 @@ update msg model =
                             let
                                 nTry =
                                     { newBreakerTry_
-                                        | pegs = (ZipperList.forward << .pegs << ZipperList.current) breakerTries_
+                                        | pegs =
+                                            (ZipperList.forward
+                                                << .pegs
+                                                << ZipperList.current
+                                            )
+                                                breakerTries_
                                     }
                             in
                                 ZipperList.update nTry breakerTries_
@@ -244,19 +254,19 @@ update msg model =
                         ZipperList.back
 
                 history =
-                    List.foldl (\_ acc -> func acc) model.history <| List.range 0 ((abs step) - 1)
+                    List.foldl (\_ acc -> func acc) model.history <|
+                        List.range 0 ((abs step) - 1)
             in
-                { model | breakerTries = ZipperList.current history, history = history } ! []
+                { model
+                    | breakerTries = ZipperList.current history
+                    , history = history
+                }
+                    ! []
 
 
 checkTry : BreakerTry -> CodeToBreak -> Maybe Bool
 checkTry breakerTry codeToBreak =
     Just <| ZipperList.toList breakerTry.pegs == codeToBreak
-
-
-isEndOfTries : ZipperList BreakerTry -> Bool
-isEndOfTries breakerTries =
-    ZipperList.hasNext breakerTries == False && (ZipperList.hasNext << .pegs << ZipperList.current) breakerTries == False
 
 
 
@@ -306,7 +316,55 @@ toDisplayableHistories history =
         idxList =
             ZipperList.toList history |> (Array.fromList >> Array.toIndexedList)
     in
-        List.foldl (\( idx, val ) acc -> acc ++ [ ( idx, idx - curIndex ) ]) [] idxList
+        List.reverse <|
+            List.foldl (\( idx, val ) acc -> ( idx, idx - curIndex ) :: acc)
+                []
+                idxList
+
+
+toHistoryLines : History -> List ( String, Int )
+toHistoryLines history =
+    case toDisplayableHistories history of
+        [] ->
+            []
+
+        [ ( idx, step ) ] ->
+            [ ( "Start", step ) ]
+
+        [ ( _, step ), ( _, stepTail ) ] ->
+            [ ( "Start", step ), ( "Resume", stepTail ) ]
+
+        ( _, step ) :: xs ->
+            let
+                start =
+                    ( "Start", step )
+
+                end =
+                    case List.reverse xs of
+                        ( _, stepTail ) :: rest ->
+                            ( "Resume", stepTail )
+
+                        [] ->
+                            ( "Resume", 0 )
+
+                rest_ =
+                    case List.reverse xs of
+                        _ :: rest ->
+                            List.reverse rest
+
+                        [] ->
+                            []
+
+                mid =
+                    List.reverse <|
+                        List.foldl
+                            (\( idx_, step_ ) acc ->
+                                ( "Move #" ++ (toString idx_), step_ ) :: acc
+                            )
+                            []
+                            rest_
+            in
+                start :: (mid ++ [ end ])
 
 
 view : Model -> Html Msg
@@ -439,7 +497,9 @@ viewColorChooser gameState =
     Card.config []
         |> Card.headerH5 [] [ text "Choose a color" ]
         |> Card.block []
-            [ Block.custom <| div [] <| List.map (viewColorButton gameState) choosableColors
+            [ Block.custom <|
+                div [] <|
+                    List.map (viewColorButton gameState) choosableColors
             ]
         |> Card.view
 
@@ -468,50 +528,13 @@ viewColorButton gameState pegColor =
 viewHistory : GameState -> History -> Html Msg
 viewHistory gameState history =
     let
-        historyLines =
-            case toDisplayableHistories history of
-                [] ->
-                    []
-
-                [ ( idx, step ) ] ->
-                    [ ( "Start", step ) ]
-
-                [ ( _, step ), ( _, stepTail ) ] ->
-                    [ ( "Start", step ), ( "Resume", stepTail ) ]
-
-                ( _, step ) :: xs ->
-                    let
-                        start =
-                            ( "Start", step )
-
-                        end =
-                            case List.reverse xs of
-                                ( _, stepTail ) :: rest ->
-                                    ( "Resume", stepTail )
-
-                                [] ->
-                                    ( "Resume", 0 )
-
-                        rest_ =
-                            case List.reverse xs of
-                                _ :: rest ->
-                                    List.reverse rest
-
-                                [] ->
-                                    []
-
-                        mid =
-                            List.foldl (\( idx_, step_ ) acc -> acc ++ [ ( "Move #" ++ (toString idx_), step_ ) ]) [] rest_
-                    in
-                        start :: (mid ++ [ end ])
-
         histories =
             case gameState of
                 Start ->
                     div [] []
 
                 _ ->
-                    div [] <| List.map viewHistoryLine historyLines
+                    div [] <| List.map viewHistoryLine <| toHistoryLines history
     in
         Card.config []
             |> Card.headerH5 [] [ text "Your moves" ]
