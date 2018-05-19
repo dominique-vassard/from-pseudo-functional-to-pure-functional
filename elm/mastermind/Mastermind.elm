@@ -523,6 +523,22 @@ viewHistory gameState history =
 
 viewHistoryLine : ( String, Int ) -> Html Msg
 viewHistoryLine ( message, step ) =
-    div [ onClick (MoveHistory step) ]
-        [ text message
-        ]
+    let
+        indicator =
+            if step == 0 then
+                "fas fa-angle-right"
+            else
+                ""
+
+        style_ =
+            if step == 0 then
+                "selected-history"
+            else
+                ""
+    in
+        div [ onClick (MoveHistory step), class <| "link rounded " ++ style_ ]
+            [ i [ class indicator ]
+                []
+            , text
+                message
+            ]

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Elm Mastermind</title>
-    <script type="text/javascript" src="elm.js"></script>
+    <script type="text/javascript" src="mastermind.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
         crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
@@ -12,7 +12,9 @@
 
 <body>
     <script type="text/javascript">
-        Elm.Main.fullscreen({ initSeed: Math.floor(Math.random() * 0xFFFFFFFF) });
+        Elm.Main.fullscreen({
+            initSeed: Math.floor(Math.random() * 0xFFFFFFFF)
+        });
     </script>
 </body>
 
