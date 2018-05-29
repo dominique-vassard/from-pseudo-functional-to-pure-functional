@@ -1,10 +1,10 @@
-# From pseudo-functional to pure functional: 3 way to code front end
+# Architecture anbd Data Flow: Frontend pain with 3 languages and 1 library
 
-Demonstrate ease and difficulties of functional front end programming.  
+Chosing a fronted framework is not just about WHAT to do with
+but also HOW we use it best.
 
-
-## React
-
-## ReasonML
-
-## Elm
+Focus on:
+  - Structure
+  - Data safety
+  - Maintenability
+  - Scalability
