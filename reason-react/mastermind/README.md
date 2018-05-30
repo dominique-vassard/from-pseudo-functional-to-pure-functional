@@ -1,4 +1,12 @@
-# mastermind
+# ReasonReact Mastermind
+The well-known mastermind game built with ReasonReact.
+
+## Prerequisite
+You need `npm`.
+`npm` is a package manager that goes along with `node`.
+Recommended way to install node is via `nvm`: https://github.com/creationix/nvm
+
+You may need to install Reason: https://reasonml.github.io/docs/en/quickstart-javascript.html
 
 ## Run Project
 

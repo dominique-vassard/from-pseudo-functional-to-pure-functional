@@ -1,4 +1,13 @@
-# counter-app
+# ReasonReact Counter
+
+A very simple app built with ReasonReact.
+Click on the `-` or `+` to increase / decrease number.
+
+## Prerequisite
+
+You need `npm`.
+`npm` is a package manager that goes along with `node`.
+Recommended way to install node is via `nvm`: https://github.com/creationix/nvm
 
 ## Run Project
 
